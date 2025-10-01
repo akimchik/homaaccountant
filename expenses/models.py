@@ -1,24 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
-# Choices for currency. This list can be extended as needed.
-CURRENCY_CHOICES = (
-    ('EUR', 'Euro (€)'), # Default currency
-    ('UAH', 'Ukrainian Hryvnia (₴)'),
-    ('USD', 'US Dollar ($)'),
-    ('GBP', 'British Pound (£)'),
-    ('JPY', 'Japanese Yen (¥)'),
-    ('CAD', 'Canadian Dollar (C$)'),
-    ('AUD', 'Australian Dollar (A$)'),
-)
+from .constants import ROLE_CHOICES, FREQUENCY_CHOICES, CURRENCY_CHOICES
 
 # Custom User model to extend Django's default User with a role field.
 class User(AbstractUser):
-    # Choices for the user's role.
-    ROLE_CHOICES = (
-        ('admin', 'Admin'),
-        ('user', 'User'),
-    )
     # The role of the user, defaulting to 'user'.
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
 
@@ -78,13 +63,6 @@ class RecurringExpense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     # The currency of the recurring expense, defaulting to Euro.
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR')
-    # Frequency choices for recurring expenses.
-    FREQUENCY_CHOICES = (
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('annually', 'Annually'),
-    )
     # How often the expense occurs.
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='monthly')
     # The date when the recurring expense starts.
@@ -92,7 +70,6 @@ class RecurringExpense(models.Model):
     # The date when the recurring expense ends (optional).
     end_date = models.DateField(null=True, blank=True)
     # Foreign key to the custom User model, linking the recurring expense to a specific user.
-    # If a user is deleted, all their expenses will also be deleted (CASCADE).
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # String representation of the RecurringExpense object.

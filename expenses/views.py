@@ -25,8 +25,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Fetches the 5 most recent expenses for the logged-in user.
-        context['recent_expenses'] = Expense.objects.filter(user=user).order_by('-date')[:5]
+        # Fetches the 5 most recent expenses for the logged-in user, optimizing category lookup.
+        context['recent_expenses'] = Expense.objects.filter(user=user).select_related('category').order_by('-date')[:5]
         # Fetches the 5 most recent incomes for the logged-in user.
         context['recent_incomes'] = Income.objects.filter(user=user).order_by('-date')[:5]
 
@@ -73,8 +73,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Prognosis for next month's balance, assuming current month's income is stable.
         context['prognosis_next_month'] = monthly_incomes - projected_recurring_expenses 
 
-        # Calculates expenses grouped by category for charting.
-        expenses_by_category = Expense.objects.filter(user=user)\
+        # Calculates expenses grouped by category for charting, optimizing category lookup.
+        expenses_by_category = Expense.objects.filter(user=user).select_related('category')\
                                 .values('category__name')\
                                 .annotate(total_amount=Sum('amount'))\
                                 .order_by('category__name')
@@ -135,14 +135,14 @@ class ExpenseListView(LoginRequiredMixin, ListView):
     template_name = 'expenses/expense_list.html'  # Template for displaying the list of expenses.
     context_object_name = 'expenses'  # Name of the context variable containing the list.
 
-    # Returns expenses filtered by the logged-in user.
+    # Returns expenses filtered by the logged-in user, optimizing category lookup.
     def get_queryset(self):
-        return Expense.objects.filter(user=self.request.user)
+        return Expense.objects.filter(user=self.request.user).select_related('category')
 
 # Create view for expenses, accessible only to logged-in users.
 class ExpenseCreateView(LoginRequiredMixin, CreateView):
     model = Expense  # Specifies the model to use.
-    form_class = ExpenseForm # Use the custom form for Expense
+    form_class = ExpenseForm # Use the custom form for Expense.
     template_name = 'expenses/expense_form.html'  # Template for the expense creation form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful creation.
 
@@ -154,7 +154,7 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for expenses, accessible only to the owner of the expense.
 class ExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Expense  # Specifies the model to use.
-    form_class = ExpenseForm # Use the custom form for Expense
+    form_class = ExpenseForm # Use the custom form for Expense.
     template_name = 'expenses/expense_form.html'  # Template for the expense update form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful update.
 
@@ -188,7 +188,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
 # Create view for incomes, accessible only to logged-in users.
 class IncomeCreateView(LoginRequiredMixin, CreateView):
     model = Income  # Specifies the model to use.
-    form_class = IncomeForm # Use the custom form for Income
+    form_class = IncomeForm # Use the custom form for Income.
     template_name = 'expenses/income_form.html'  # Template for the income creation form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful creation.
 
@@ -200,7 +200,7 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
 # Update view for incomes, accessible only to the owner of the income.
 class IncomeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Income  # Specifies the model to use.
-    form_class = IncomeForm # Use the custom form for Income
+    form_class = IncomeForm # Use the custom form for Income.
     template_name = 'expenses/income_form.html'  # Template for the income update form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful update.
 
@@ -232,7 +232,7 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
 # Create view for recurring expenses, accessible only to logged-in users.
 class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
     model = RecurringExpense
-    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense
+    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense.
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 
@@ -243,7 +243,7 @@ class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for recurring expenses, accessible only to the owner.
 class RecurringExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = RecurringExpense
-    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense
+    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense.
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 
@@ -276,7 +276,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         end_date_str = self.request.GET.get('end_date')
 
         # Initializes querysets for expenses and incomes for the current user.
-        expenses = Expense.objects.filter(user=user)
+        expenses = Expense.objects.filter(user=user).select_related('category')
         incomes = Income.objects.filter(user=user)
 
         # Filters expenses by category if a category is selected.

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User, Expense, Income, RecurringExpense
+# CURRENCY_CHOICES are implicitly used by ModelForm from the model definition.
 
 # Custom form for user creation, extending Django's built-in UserCreationForm.
 # This form is used to allow users to sign up with an additional 'role' field.
