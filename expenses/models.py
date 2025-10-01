@@ -1,6 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+# Choices for currency.
+CURRENCY_CHOICES = (
+    ('EUR', 'Euro (€)'),
+    ('USD', 'US Dollar ($)'),
+    ('GBP', 'British Pound (£)'),
+    ('JPY', 'Japanese Yen (¥)'),
+    ('CAD', 'Canadian Dollar (C$)'),
+    ('AUD', 'Australian Dollar (A$)'),
+)
+
 # Custom User model to extend Django's default User with a role field.
 class User(AbstractUser):
     # Choices for the user's role.
@@ -26,6 +36,8 @@ class Expense(models.Model):
     description = models.CharField(max_length=255)
     # The amount of the expense, allowing for decimal values.
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # The currency of the expense, defaulting to Euro.
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR')
     # The date when the expense occurred.
     date = models.DateField()
     # Foreign key to the Category model, indicating the category of the expense.
@@ -37,7 +49,7 @@ class Expense(models.Model):
 
     # String representation of the Expense object.
     def __str__(self):
-        return f'{self.description} - {self.amount}'
+        return f'{self.description} - {self.amount} {self.currency}'
 
 # Model to represent individual income entries.
 class Income(models.Model):
@@ -45,6 +57,8 @@ class Income(models.Model):
     description = models.CharField(max_length=255)
     # The amount of the income, allowing for decimal values.
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # The currency of the income, defaulting to Euro.
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR')
     # The date when the income was received.
     date = models.DateField()
     # Foreign key to the custom User model, linking the income to a specific user.
@@ -53,7 +67,7 @@ class Income(models.Model):
 
     # String representation of the Income object.
     def __str__(self):
-        return f'{self.description} - {self.amount}'
+        return f'{self.description} - {self.amount} {self.currency}'
 
 # Model to represent recurring expenses.
 class RecurringExpense(models.Model):
@@ -61,6 +75,8 @@ class RecurringExpense(models.Model):
     description = models.CharField(max_length=255)
     # The amount of the recurring expense.
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # The currency of the recurring expense, defaulting to Euro.
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR')
     # Frequency choices for recurring expenses.
     FREQUENCY_CHOICES = (
         ('daily', 'Daily'),
@@ -79,4 +95,4 @@ class RecurringExpense(models.Model):
 
     # String representation of the RecurringExpense object.
     def __str__(self):
-        return f'{self.description} ({self.amount} {self.frequency})'
+        return f'{self.description} ({self.amount} {self.currency} {self.frequency})'

@@ -8,7 +8,7 @@
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                     <strong>{{ recurring_expense.description }}</strong><br>
-                    <small>{{ recurring_expense.amount }} | {{ recurring_expense.frequency }} | {{ recurring_expense.start_date }}{% if recurring_expense.end_date %} - {{ recurring_expense.end_date }}{% endif %}</small>
+                    <small>{{ recurring_expense.amount }} {{ recurring_expense.currency }} | {{ recurring_expense.frequency }} | {{ recurring_expense.start_date }}{% if recurring_expense.end_date %} - {{ recurring_expense.end_date }}{% endif %}</small>
                 </div>
                 <div>
                     <a href="{% url 'recurringexpense-update' recurring_expense.pk %}" class="btn btn-secondary btn-sm">Edit</a>

@@ -10,7 +10,7 @@
             <div class="card text-white bg-success mb-3">
                 <div class="card-header">Monthly Income</div>
                 <div class="card-body">
-                    <h5 class="card-title"> ${{ monthly_incomes|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ monthly_incomes|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -18,7 +18,7 @@
             <div class="card text-white bg-danger mb-3">
                 <div class="card-header">Monthly Expenses</div>
                 <div class="card-body">
-                    <h5 class="card-title"> ${{ monthly_expenses|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ monthly_expenses|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="card text-white {% if money_left >= 0 %}bg-info{% else %}bg-warning{% endif %} mb-3">
                 <div class="card-header">Money Left</div>
                 <div class="card-body">
-                    <h5 class="card-title"> ${{ money_left|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ money_left|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -38,8 +38,8 @@
             <div class="card mb-3">
                 <div class="card-header">Next Month's Prognosis</div>
                 <div class="card-body">
-                    <p>Projected Recurring Expenses: <strong>${{ projected_recurring_expenses|floatformat:2 }}</strong></p>
-                    <p>Estimated Balance (assuming current income): <strong>${{ prognosis_next_month|floatformat:2 }}</strong></p>
+                    <p>Projected Recurring Expenses: <strong>€{{ projected_recurring_expenses|floatformat:2 }}</strong></p>
+                    <p>Estimated Balance (assuming current income): <strong>€{{ prognosis_next_month|floatformat:2 }}</strong></p>
                     {% if prognosis_next_month < 0 %}
                         <div class="alert alert-warning" role="alert">
                             Warning: Your estimated expenses for next month might exceed your current income!
@@ -57,7 +57,7 @@
                 {% for expense in recent_expenses %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ expense.description }}
-                        <span class="badge bg-primary rounded-pill">-${{ expense.amount }}</span> {# Changed to - for expenses #}
+                        <span class="badge bg-primary rounded-pill"> -{{ expense.amount }} {{ expense.currency }}</span> {# Changed to - for expenses #}
                     </li>
                 {% empty %}
                     <li class="list-group-item">No recent expenses.</li>
@@ -70,7 +70,7 @@
                 {% for income in recent_incomes %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ income.description }}
-                        <span class="badge bg-success rounded-pill">+${{ income.amount }}</span>
+                        <span class="badge bg-success rounded-pill"> +{{ income.amount }} {{ income.currency }}</span>
                     </li>
                 {% empty %}
                     <li class="list-group-item">No recent incomes.</li>

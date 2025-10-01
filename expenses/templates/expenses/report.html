@@ -40,7 +40,7 @@
             <div class="card text-white bg-success mb-3">
                 <div class="card-header">Total Income</div>
                 <div class="card-body">
-                    <h5 class="card-title">${{ total_incomes|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ total_incomes|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <div class="card text-white bg-danger mb-3">
                 <div class="card-header">Total Expenses</div>
                 <div class="card-body">
-                    <h5 class="card-title">${{ total_expenses|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ total_expenses|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
             <div class="card text-white {% if balance >= 0 %}bg-info{% else %}bg-warning{% endif %} mb-3">
                 <div class="card-header">Balance</div>
                 <div class="card-body">
-                    <h5 class="card-title">${{ balance|floatformat:2 }}</h5>
+                    <h5 class="card-title">€{{ balance|floatformat:2 }}</h5>
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
                     <strong>{{ expense.description }}</strong><br>
                     <small>{{ expense.date }} | {{ expense.category }}</small>
                 </div>
-                <span>${{ expense.amount }}</span>
+                <span>{{ expense.amount }} {{ expense.currency }}</span>
             </li>
         {% empty %}
             <li class="list-group-item">No expenses found for this period.</li>
@@ -85,7 +85,7 @@
                     <strong>{{ income.description }}</strong><br>
                     <small>{{ income.date }}</small>
                 </div>
-                <span>${{ income.amount }}</span>
+                <span>{{ income.amount }} {{ income.currency }}</span>
             </li>
         {% empty %}
             <li class="list-group-item">No incomes found for this period.</li>

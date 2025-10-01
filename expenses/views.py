@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, T
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Expense, Category, Income, RecurringExpense
 from django.urls import reverse_lazy
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, ExpenseForm, IncomeForm, RecurringExpenseForm
 import json
 from django.db.models import Sum
 from datetime import datetime, timedelta
@@ -141,7 +141,7 @@ class ExpenseListView(LoginRequiredMixin, ListView):
 # Create view for expenses, accessible only to logged-in users.
 class ExpenseCreateView(LoginRequiredMixin, CreateView):
     model = Expense  # Specifies the model to use.
-    fields = ['description', 'amount', 'date', 'category']  # Fields to be displayed in the form.
+    form_class = ExpenseForm # Use the custom form
     template_name = 'expenses/expense_form.html'  # Template for the expense creation form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful creation.
 
@@ -153,7 +153,7 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for expenses, accessible only to the owner of the expense.
 class ExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Expense  # Specifies the model to use.
-    fields = ['description', 'amount', 'date', 'category']  # Fields to be displayed in the form.
+    form_class = ExpenseForm # Use the custom form
     template_name = 'expenses/expense_form.html'  # Template for the expense update form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful update.
 
@@ -187,7 +187,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
 # Create view for incomes, accessible only to logged-in users.
 class IncomeCreateView(LoginRequiredMixin, CreateView):
     model = Income  # Specifies the model to use.
-    fields = ['description', 'amount', 'date']  # Fields to be displayed in the form.
+    form_class = IncomeForm # Use the custom form
     template_name = 'expenses/income_form.html'  # Template for the income creation form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful creation.
 
@@ -199,7 +199,7 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
 # Update view for incomes, accessible only to the owner of the income.
 class IncomeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Income  # Specifies the model to use.
-    fields = ['description', 'amount', 'date']  # Fields to be displayed in the form.
+    form_class = IncomeForm # Use the custom form
     template_name = 'expenses/income_form.html'  # Template for the income update form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful update.
 
@@ -231,7 +231,7 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
 # Create view for recurring expenses, accessible only to logged-in users.
 class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
     model = RecurringExpense
-    fields = ['description', 'amount', 'frequency', 'start_date', 'end_date']
+    form_class = RecurringExpenseForm # Use the custom form
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 
@@ -242,7 +242,7 @@ class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for recurring expenses, accessible only to the owner.
 class RecurringExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = RecurringExpense
-    fields = ['description', 'amount', 'frequency', 'start_date', 'end_date']
+    form_class = RecurringExpenseForm # Use the custom form
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 
@@ -313,7 +313,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         context['categories'] = Category.objects.all()  # All categories for the filter dropdown.
         context['selected_category'] = int(category_id) if category_id else ''  # Retains selected category in filter.
         context['start_date'] = start_date_str if start_date_str else start_date.strftime('%Y-%m-%d')  # Retains start date.
-        context['end_date'] = end_date_str if end_date_str else end_date.strftime('%Y-%m-%d')  # Retains end date.
+        context['end_date'] = end_date_str if end_date_str else end_of_month.strftime('%Y-%m-%d')  # Retains end date.
 
         # Generates an alert if expenses exceed income.
         if total_expenses > total_incomes:
