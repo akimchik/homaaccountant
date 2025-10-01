@@ -1,0 +1,24 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+    <h1>Incomes</h1>
+    <a href="{% url 'income-create' %}" class="btn btn-primary mb-3">New Income</a>
+    <ul class="list-group">
+        {% for income in incomes %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ income.description }}</strong><br>
+                    <small>{{ income.date }}</small>
+                </div>
+                <div>
+                    {# Displays income amount with its specific currency #}
+                    <span>{{ income.amount }} {{ income.currency }}</span>
+                    <a href="{% url 'income-update' income.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                    <a href="{% url 'income-delete' income.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No incomes found.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

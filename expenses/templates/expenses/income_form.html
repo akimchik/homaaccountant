@@ -1,0 +1,22 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+    <h1>{% if object %}Edit Income{% else %}New Income{% endif %}</h1>
+    {# Form for creating or updating an income. Includes fields for description, amount, currency, and date. #}
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+{% endblock %}

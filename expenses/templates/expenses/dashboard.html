@@ -1,0 +1,177 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="?year={{ previous_month.year }}&month={{ previous_month.month }}" class="btn btn-outline-primary">&laquo; Previous</a>
+        <h2>{{ current_month|date:"F Y" }}</h2>
+        <a href="?year={{ next_month.year }}&month={{ next_month.month }}" class="btn btn-outline-primary">Next &raquo;</a>
+    </div>
+
+    <form method="get" class="row g-3 align-items-center mb-4">
+        <div class="col-auto">
+            <label for="month" class="visually-hidden">Month</label>
+            <select name="month" id="month" class="form-select">
+                {% for month_name in month_names %}
+                    <option value="{{ forloop.counter }}" {% if current_month.month == forloop.counter %}selected{% endif %}>{{ month_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <label for="year" class="visually-hidden">Year</label>
+            <input type="number" name="year" id="year" value="{{ current_month.year }}" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Go</button>
+        </div>
+    </form>
+
+    {# Budget Summary Section #}
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-header">Balance from Previous Month</div>
+                <div class="card-body">
+                    <h5 class="card-title">€{{ previous_month_balance|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Monthly Income</div>
+                <div class="card-body">
+                    {# Displays monthly income in Euro #}
+                    <h5 class="card-title">€{{ monthly_incomes|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Monthly Expenses</div>
+                <div class="card-body">
+                    {# Displays monthly expenses in Euro #}
+                    <h5 class="card-title">€{{ monthly_expenses|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+            <div class="card text-white {% if money_left >= 0 %}bg-info{% else %}bg-warning{% endif %} mb-3">
+                <div class="card-header">Money Left</div>
+                <div class="card-body">
+                    {# Displays remaining money in Euro #}
+                    <h5 class="card-title">€{{ money_left|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Next Month's Prognosis Section #}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card mb-3">
+                <div class="card-header">Next Month's Prognosis</div>
+                <div class="card-body">
+                    {# Displays projected recurring expenses in Euro #}
+                    <p>Projected Recurring Expenses: <strong>€{{ projected_recurring_expenses|floatformat:2 }}</strong></p>
+                    {# Displays estimated balance for next month in Euro #}
+                    <p>Estimated Balance (assuming current income): <strong>€{{ prognosis_next_month|floatformat:2 }}</strong></p>
+                    {% if prognosis_next_month < 0 %}
+                        <div class="alert alert-warning" role="alert">
+                            Warning: Your estimated expenses for next month might exceed your current income!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 col-md-12">
+            <h2>Recent Expenses</h2>
+            <ul class="list-group mb-4"> {# Added mb-4 for spacing #}
+                {% for expense in recent_expenses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ expense.description }}
+                        {# Displays expense amount with its specific currency #}
+                        <span class="badge bg-primary rounded-pill"> -{{ expense.amount }} {{ expense.currency }}</span> {# Changed to - for expenses #}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No recent expenses.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <h2>Recent Incomes</h2>
+            <ul class="list-group mb-4">
+                {% for income in recent_incomes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ income.description }}
+                        {# Displays income amount with its specific currency #}
+                        <span class="badge bg-success rounded-pill"> +{{ income.amount }} {{ income.currency }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No recent incomes.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12"> {# Changed to col-md-12 for full width chart #}
+            <h2>Expenses by Category</h2>
+            {% if no_chart_data %}
+                <p>No data available for this month.</p>
+            {% else %}
+                <canvas id="expenseChart"></canvas>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        var ctx = document.getElementById('expenseChart').getContext('2d');
+        var chartLabels = JSON.parse('{{ chart_labels_json|escapejs }}');
+        var chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+
+        var expenseChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Expenses by Category'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
