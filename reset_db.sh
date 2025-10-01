@@ -30,5 +30,5 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-echo "Database reset complete. You can now create a superuser:"
-echo "python manage.py createsuperuser"
+echo "Database reset complete. Creating development superuser..."
+python manage.py create_dev_superuser

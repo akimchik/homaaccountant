@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .models import Expense, Category, Income
+from .models import Expense, Category, Income, RecurringExpense
 from django.urls import reverse_lazy
 from .forms import CustomUserCreationForm
 import json
 from django.db.models import Sum
 from datetime import datetime, timedelta
+from django.utils import timezone # Import timezone
+from dateutil.relativedelta import relativedelta # For easier month calculations
 
 # View for user registration.
 class SignUpView(CreateView):
@@ -21,11 +23,57 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     # Provides context data to the template.
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+
         # Fetches the 5 most recent expenses for the logged-in user.
-        context['recent_expenses'] = Expense.objects.filter(user=self.request.user).order_by('-date')[:5]
+        context['recent_expenses'] = Expense.objects.filter(user=user).order_by('-date')[:5]
+        # Fetches the 5 most recent incomes for the logged-in user.
+        context['recent_incomes'] = Income.objects.filter(user=user).order_by('-date')[:5]
+
+        # Calculate current month's budget summary
+        today = timezone.now().date()
+        start_of_month = today.replace(day=1)
+        end_of_month = (start_of_month + relativedelta(months=1)) - timedelta(days=1)
+
+        monthly_expenses = Expense.objects.filter(
+            user=user,
+            date__gte=start_of_month,
+            date__lte=end_of_month
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+        monthly_incomes = Income.objects.filter(
+            user=user,
+            date__gte=start_of_month,
+            date__lte=end_of_month
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+        context['monthly_expenses'] = monthly_expenses
+        context['monthly_incomes'] = monthly_incomes
+        context['money_left'] = monthly_incomes - monthly_expenses
+
+        # Calculate next month's prognosis
+        next_month_start = start_of_month + relativedelta(months=1)
+        next_month_end = (next_month_start + relativedelta(months=1)) - timedelta(days=1)
+
+        # Projected recurring expenses for next month
+        projected_recurring_expenses = 0
+        recurring_expenses = RecurringExpense.objects.filter(user=user)
+        for re in recurring_expenses:
+            # Simple projection: if recurring expense is active in next month
+            # This logic can be made more sophisticated for daily/weekly frequencies
+            if re.start_date <= next_month_end and (re.end_date is None or re.end_date >= next_month_start):
+                if re.frequency == 'monthly':
+                    projected_recurring_expenses += re.amount
+                elif re.frequency == 'annually':
+                    projected_recurring_expenses += re.amount / 12 # Prorate annually to monthly
+                # For daily/weekly, a more complex calculation would be needed
+                # For simplicity, we'll only consider monthly and annually for now
+
+        context['projected_recurring_expenses'] = projected_recurring_expenses
+        context['prognosis_next_month'] = monthly_incomes - projected_recurring_expenses # Assuming income is stable
 
         # Calculates expenses grouped by category for charting.
-        expenses_by_category = Expense.objects.filter(user=self.request.user)\
+        expenses_by_category = Expense.objects.filter(user=user)\
                                 .values('category__name')\
                                 .annotate(total_amount=Sum('amount'))\
                                 .order_by('category__name')
@@ -169,6 +217,48 @@ class IncomeDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     # Checks if the logged-in user is an admin.
     def test_func(self):
         return self.request.user.role == 'admin'
+
+# Recurring Expense Views
+# List view for recurring expenses, accessible only to logged-in users.
+class RecurringExpenseListView(LoginRequiredMixin, ListView):
+    model = RecurringExpense
+    template_name = 'expenses/recurringexpense_list.html'
+    context_object_name = 'recurring_expenses'
+
+    def get_queryset(self):
+        return RecurringExpense.objects.filter(user=self.request.user)
+
+# Create view for recurring expenses, accessible only to logged-in users.
+class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
+    model = RecurringExpense
+    fields = ['description', 'amount', 'frequency', 'start_date', 'end_date']
+    template_name = 'expenses/recurringexpense_form.html'
+    success_url = reverse_lazy('recurringexpense-list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+# Update view for recurring expenses, accessible only to the owner.
+class RecurringExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = RecurringExpense
+    fields = ['description', 'amount', 'frequency', 'start_date', 'end_date']
+    template_name = 'expenses/recurringexpense_form.html'
+    success_url = reverse_lazy('recurringexpense-list')
+
+    def test_func(self):
+        recurring_expense = self.get_object()
+        return self.request.user == recurring_expense.user
+
+# Delete view for recurring expenses, accessible only to the owner.
+class RecurringExpenseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = RecurringExpense
+    template_name = 'expenses/recurringexpense_confirm_delete.html'
+    success_url = reverse_lazy('recurringexpense-list')
+
+    def test_func(self):
+        recurring_expense = self.get_object()
+        return self.request.user == recurring_expense.user
 
 # Report view, accessible only to logged-in users.
 class ReportView(LoginRequiredMixin, TemplateView):

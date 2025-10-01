@@ -5,6 +5,7 @@ from .views import (
     CategoryListView, CategoryCreateView, CategoryUpdateView, CategoryDeleteView,
     ExpenseListView, ExpenseCreateView, ExpenseUpdateView, ExpenseDeleteView,
     IncomeListView, IncomeCreateView, IncomeUpdateView, IncomeDeleteView,
+    RecurringExpenseListView, RecurringExpenseCreateView, RecurringExpenseUpdateView, RecurringExpenseDeleteView,
     SignUpView,
     ReportView
 )
@@ -51,6 +52,12 @@ urlpatterns = [
     path('incomes/<int:pk>/edit/', IncomeUpdateView.as_view(), name='income-update'),
     # Delete an existing income, identified by its primary key (pk).
     path('incomes/<int:pk>/delete/', IncomeDeleteView.as_view(), name='income-delete'),
+
+    # Recurring Expense URLs: For managing recurring expenses.
+    path('recurring-expenses/', RecurringExpenseListView.as_view(), name='recurringexpense-list'),
+    path('recurring-expenses/new/', RecurringExpenseCreateView.as_view(), name='recurringexpense-create'),
+    path('recurring-expenses/<int:pk>/edit/', RecurringExpenseUpdateView.as_view(), name='recurringexpense-update'),
+    path('recurring-expenses/<int:pk>/delete/', RecurringExpenseDeleteView.as_view(), name='recurringexpense-delete'),
 
     # Report URL: For viewing financial reports.
     path('reports/', ReportView.as_view(), name='report'),

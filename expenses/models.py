@@ -54,3 +54,29 @@ class Income(models.Model):
     # String representation of the Income object.
     def __str__(self):
         return f'{self.description} - {self.amount}'
+
+# Model to represent recurring expenses.
+class RecurringExpense(models.Model):
+    # A brief description of the recurring expense.
+    description = models.CharField(max_length=255)
+    # The amount of the recurring expense.
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # Frequency choices for recurring expenses.
+    FREQUENCY_CHOICES = (
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('annually', 'Annually'),
+    )
+    # How often the expense occurs.
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='monthly')
+    # The date when the recurring expense starts.
+    start_date = models.DateField()
+    # The date when the recurring expense ends (optional).
+    end_date = models.DateField(null=True, blank=True)
+    # Foreign key to the custom User model, linking the recurring expense to a specific user.
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    # String representation of the RecurringExpense object.
+    def __str__(self):
+        return f'{self.description} ({self.amount} {self.frequency})'

@@ -59,13 +59,6 @@ Follow these steps to get the project up and running on your local machine.
     python manage.py collectstatic --noinput
     ```
 
-7.  **Create a Superuser (Admin Account):**
-    You'll need an admin account to access the Django admin panel and manage certain aspects of the application.
-    ```bash
-    python manage.py createsuperuser
-    ```
-    Follow the prompts to create your superuser account.
-
 8.  **Run the Development Server:**
     ```bash
     python manage.py runserver
@@ -94,7 +87,7 @@ To reset your database (e.g., for development or to clear all data), you can use
     *   Reapply all migrations.
     *   Collect static files.
 
-    After running the script, you will need to create a new superuser.
+    After running the script, a development superuser with username 'admin' and password 'admin' will be created automatically.
 
 ## Project Structure:
 
