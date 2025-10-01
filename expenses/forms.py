@@ -15,8 +15,11 @@ class CustomUserCreationForm(UserCreationForm):
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
+        # Fields to be included in the form, now including 'currency'.
         fields = ['description', 'amount', 'currency', 'date', 'category']
+        # Widgets to customize the appearance and behavior of form fields.
         widgets = {
+            # Uses an HTML5 date input for a native calendar picker.
             'date': forms.DateInput(attrs={'type': 'date'}),
         }
 
@@ -24,8 +27,11 @@ class ExpenseForm(forms.ModelForm):
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
+        # Fields to be included in the form, now including 'currency'.
         fields = ['description', 'amount', 'currency', 'date']
+        # Widgets to customize the appearance and behavior of form fields.
         widgets = {
+            # Uses an HTML5 date input for a native calendar picker.
             'date': forms.DateInput(attrs={'type': 'date'}),
         }
 
@@ -33,8 +39,11 @@ class IncomeForm(forms.ModelForm):
 class RecurringExpenseForm(forms.ModelForm):
     class Meta:
         model = RecurringExpense
+        # Fields to be included in the form, now including 'currency'.
         fields = ['description', 'amount', 'currency', 'frequency', 'start_date', 'end_date']
+        # Widgets to customize the appearance and behavior of form fields.
         widgets = {
+            # Uses HTML5 date inputs for native calendar pickers.
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }

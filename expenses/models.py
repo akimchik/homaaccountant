@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# Choices for currency.
+# Choices for currency. This list can be extended as needed.
 CURRENCY_CHOICES = (
-    ('EUR', 'Euro (€)'),
+    ('EUR', 'Euro (€)'), # Default currency
+    ('UAH', 'Ukrainian Hryvnia (₴)'),
     ('USD', 'US Dollar ($)'),
     ('GBP', 'British Pound (£)'),
     ('JPY', 'Japanese Yen (¥)'),
@@ -91,6 +92,7 @@ class RecurringExpense(models.Model):
     # The date when the recurring expense ends (optional).
     end_date = models.DateField(null=True, blank=True)
     # Foreign key to the custom User model, linking the recurring expense to a specific user.
+    # If a user is deleted, all their expenses will also be deleted (CASCADE).
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # String representation of the RecurringExpense object.

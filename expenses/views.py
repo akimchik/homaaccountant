@@ -51,7 +51,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['monthly_incomes'] = monthly_incomes
         context['money_left'] = monthly_incomes - monthly_expenses
 
-        # Calculate next month's prognosis
+        # Calculate next month's prognosis based on recurring expenses
         next_month_start = start_of_month + relativedelta(months=1)
         next_month_end = (next_month_start + relativedelta(months=1)) - timedelta(days=1)
 
@@ -70,7 +70,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 # For simplicity, we'll only consider monthly and annually for now
 
         context['projected_recurring_expenses'] = projected_recurring_expenses
-        context['prognosis_next_month'] = monthly_incomes - projected_recurring_expenses # Assuming income is stable
+        # Prognosis for next month's balance, assuming current month's income is stable.
+        context['prognosis_next_month'] = monthly_incomes - projected_recurring_expenses 
 
         # Calculates expenses grouped by category for charting.
         expenses_by_category = Expense.objects.filter(user=user)\
@@ -141,7 +142,7 @@ class ExpenseListView(LoginRequiredMixin, ListView):
 # Create view for expenses, accessible only to logged-in users.
 class ExpenseCreateView(LoginRequiredMixin, CreateView):
     model = Expense  # Specifies the model to use.
-    form_class = ExpenseForm # Use the custom form
+    form_class = ExpenseForm # Use the custom form for Expense
     template_name = 'expenses/expense_form.html'  # Template for the expense creation form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful creation.
 
@@ -153,7 +154,7 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for expenses, accessible only to the owner of the expense.
 class ExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Expense  # Specifies the model to use.
-    form_class = ExpenseForm # Use the custom form
+    form_class = ExpenseForm # Use the custom form for Expense
     template_name = 'expenses/expense_form.html'  # Template for the expense update form.
     success_url = reverse_lazy('expense-list')  # Redirects to the expense list upon successful update.
 
@@ -187,7 +188,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
 # Create view for incomes, accessible only to logged-in users.
 class IncomeCreateView(LoginRequiredMixin, CreateView):
     model = Income  # Specifies the model to use.
-    form_class = IncomeForm # Use the custom form
+    form_class = IncomeForm # Use the custom form for Income
     template_name = 'expenses/income_form.html'  # Template for the income creation form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful creation.
 
@@ -199,7 +200,7 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
 # Update view for incomes, accessible only to the owner of the income.
 class IncomeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Income  # Specifies the model to use.
-    form_class = IncomeForm # Use the custom form
+    form_class = IncomeForm # Use the custom form for Income
     template_name = 'expenses/income_form.html'  # Template for the income update form.
     success_url = reverse_lazy('income-list')  # Redirects to the income list upon successful update.
 
@@ -231,7 +232,7 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
 # Create view for recurring expenses, accessible only to logged-in users.
 class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
     model = RecurringExpense
-    form_class = RecurringExpenseForm # Use the custom form
+    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 
@@ -242,7 +243,7 @@ class RecurringExpenseCreateView(LoginRequiredMixin, CreateView):
 # Update view for recurring expenses, accessible only to the owner.
 class RecurringExpenseUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = RecurringExpense
-    form_class = RecurringExpenseForm # Use the custom form
+    form_class = RecurringExpenseForm # Use the custom form for RecurringExpense
     template_name = 'expenses/recurringexpense_form.html'
     success_url = reverse_lazy('recurringexpense-list')
 

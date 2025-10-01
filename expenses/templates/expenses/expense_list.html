@@ -11,6 +11,7 @@
                     <small>{{ expense.date }} | {{ expense.category }}</small>
                 </div>
                 <div>
+                    {# Displays expense amount with its specific currency #}
                     <span>{{ expense.amount }} {{ expense.currency }}</span>
                     <a href="{% url 'expense-update' expense.pk %}" class="btn btn-secondary btn-sm">Edit</a>
                     <a href="{% url 'expense-delete' expense.pk %}" class="btn btn-danger btn-sm">Delete</a>

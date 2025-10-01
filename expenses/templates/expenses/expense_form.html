@@ -2,6 +2,7 @@
 
 {% block content %}
     <h1>{% if object %}Edit Expense{% else %}New Expense{% endif %}</h1>
+    {# Form for creating or updating an expense. Includes fields for description, amount, currency, date, and category. #}
     <form method="post">
         {% csrf_token %}
         {% for field in form %}

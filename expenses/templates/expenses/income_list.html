@@ -11,6 +11,7 @@
                     <small>{{ income.date }}</small>
                 </div>
                 <div>
+                    {# Displays income amount with its specific currency #}
                     <span>{{ income.amount }} {{ income.currency }}</span>
                     <a href="{% url 'income-update' income.pk %}" class="btn btn-secondary btn-sm">Edit</a>
                     <a href="{% url 'income-delete' income.pk %}" class="btn btn-danger btn-sm">Delete</a>

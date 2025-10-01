@@ -2,6 +2,7 @@
 
 {% block content %}
     <h1>{% if object %}Edit Recurring Expense{% else %}New Recurring Expense{% endif %}</h1>
+    {# Form for creating or updating a recurring expense. Includes fields for description, amount, currency, frequency, start date, and end date. #}
     <form method="post">
         {% csrf_token %}
         {% for field in form %}

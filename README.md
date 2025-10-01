@@ -45,7 +45,7 @@ Follow these steps to get the project up and running on your local machine.
 
 4.  **Install Dependencies:**
     ```bash
-    pip install Django
+    pip install Django python-dateutil
     ```
 
 5.  **Apply Database Migrations:**

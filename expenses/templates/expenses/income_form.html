@@ -2,6 +2,7 @@
 
 {% block content %}
     <h1>{% if object %}Edit Income{% else %}New Income{% endif %}</h1>
+    {# Form for creating or updating an income. Includes fields for description, amount, currency, and date. #}
     <form method="post">
         {% csrf_token %}
         {% for field in form %}
