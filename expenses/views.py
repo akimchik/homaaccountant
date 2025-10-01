@@ -30,10 +30,44 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Fetches the 5 most recent incomes for the logged-in user.
         context['recent_incomes'] = Income.objects.filter(user=user).order_by('-date')[:5]
 
-        # Calculate current month's budget summary
+        # Get selected month and year from request, default to current month
         today = timezone.now().date()
-        start_of_month = today.replace(day=1)
+        year = self.request.GET.get('year', today.year)
+        month = self.request.GET.get('month', today.month)
+        current_month = datetime(int(year), int(month), 1).date()
+
+        # Calculate start and end of the selected month
+        start_of_month = current_month.replace(day=1)
         end_of_month = (start_of_month + relativedelta(months=1)) - timedelta(days=1)
+
+        # Previous and next month for navigation
+        previous_month = start_of_month - relativedelta(months=1)
+        next_month = start_of_month + relativedelta(months=1)
+
+        context['current_month'] = current_month
+        context['previous_month'] = previous_month
+        context['next_month'] = next_month
+        context['month_names'] = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+
+        previous_month_start = previous_month.replace(day=1)
+        previous_month_end = (previous_month_start + relativedelta(months=1)) - timedelta(days=1)
+
+        previous_month_incomes = Income.objects.filter(
+            user=user,
+            date__gte=previous_month_start,
+            date__lte=previous_month_end
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+        previous_month_expenses = Expense.objects.filter(
+            user=user,
+            date__gte=previous_month_start,
+            date__lte=previous_month_end
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+        previous_month_balance = previous_month_incomes - previous_month_expenses
 
         monthly_expenses = Expense.objects.filter(
             user=user,
@@ -41,15 +75,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             date__lte=end_of_month
         ).aggregate(Sum('amount'))['amount__sum'] or 0
 
-        monthly_incomes = Income.objects.filter(
+        monthly_incomes = (Income.objects.filter(
             user=user,
             date__gte=start_of_month,
             date__lte=end_of_month
-        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        ).aggregate(Sum('amount'))['amount__sum'] or 0) + previous_month_balance
 
         context['monthly_expenses'] = monthly_expenses
         context['monthly_incomes'] = monthly_incomes
         context['money_left'] = monthly_incomes - monthly_expenses
+        context['previous_month_balance'] = previous_month_balance
 
         # Calculate next month's prognosis based on recurring expenses
         next_month_start = start_of_month + relativedelta(months=1)
@@ -90,6 +125,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Dumps chart data to JSON for use in JavaScript.
         context['chart_labels_json'] = json.dumps(chart_labels)
         context['chart_data_json'] = json.dumps(chart_data)
+        context['no_chart_data'] = not chart_data
 
         return context
 

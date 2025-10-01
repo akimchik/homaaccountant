@@ -2,11 +2,41 @@
 
 {% block content %}
     <h1>Dashboard</h1>
-    <hr>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="?year={{ previous_month.year }}&month={{ previous_month.month }}" class="btn btn-outline-primary">&laquo; Previous</a>
+        <h2>{{ current_month|date:"F Y" }}</h2>
+        <a href="?year={{ next_month.year }}&month={{ next_month.month }}" class="btn btn-outline-primary">Next &raquo;</a>
+    </div>
+
+    <form method="get" class="row g-3 align-items-center mb-4">
+        <div class="col-auto">
+            <label for="month" class="visually-hidden">Month</label>
+            <select name="month" id="month" class="form-select">
+                {% for month_name in month_names %}
+                    <option value="{{ forloop.counter }}" {% if current_month.month == forloop.counter %}selected{% endif %}>{{ month_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <label for="year" class="visually-hidden">Year</label>
+            <input type="number" name="year" id="year" value="{{ current_month.year }}" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Go</button>
+        </div>
+    </form>
 
     {# Budget Summary Section #}
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-header">Balance from Previous Month</div>
+                <div class="card-body">
+                    <h5 class="card-title">€{{ previous_month_balance|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card text-white bg-success mb-3">
                 <div class="card-header">Monthly Income</div>
                 <div class="card-body">
@@ -15,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-white bg-danger mb-3">
                 <div class="card-header">Monthly Expenses</div>
                 <div class="card-body">
@@ -24,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-white {% if money_left >= 0 %}bg-info{% else %}bg-warning{% endif %} mb-3">
                 <div class="card-header">Money Left</div>
                 <div class="card-body">
@@ -89,7 +119,11 @@
     <div class="row">
         <div class="col-md-12"> {# Changed to col-md-12 for full width chart #}
             <h2>Expenses by Category</h2>
-            <canvas id="expenseChart"></canvas>
+            {% if no_chart_data %}
+                <p>No data available for this month.</p>
+            {% else %}
+                <canvas id="expenseChart"></canvas>
+            {% endif %}
         </div>
     </div>
 
