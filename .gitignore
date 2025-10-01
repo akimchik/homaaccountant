@@ -1,0 +1,26 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Virtual environment
+venv/
+
+# Database
+db.sqlite3
+
+# Static files (collected by collectstatic)
+staticfiles/
+
+# Media files (user-uploaded content)
+media/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# Django secret key (if stored in a separate file)
+# secret_key.py

@@ -1,0 +1,71 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Recent Expenses</h2>
+            <ul class="list-group">
+                {% for expense in recent_expenses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ expense.description }}
+                        <span class="badge bg-primary rounded-pill">${{ expense.amount }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No recent expenses.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h2>Expenses by Category</h2>
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('expenseChart').getContext('2d');
+        var chartLabels = JSON.parse('{{ chart_labels_json|escapejs }}');
+        var chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+
+        var expenseChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Expenses by Category'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
