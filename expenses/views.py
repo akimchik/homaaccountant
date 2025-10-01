@@ -74,10 +74,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['prognosis_next_month'] = monthly_incomes - projected_recurring_expenses 
 
         # Calculates expenses grouped by category for charting, optimizing category lookup.
-        expenses_by_category = Expense.objects.filter(user=user).select_related('category')\
-                                .values('category__name')\
-                                .annotate(total_amount=Sum('amount'))\
-                                .order_by('category__name')
+        expenses_by_category = Expense.objects.filter(
+            user=user,
+            date__gte=start_of_month,
+            date__lte=end_of_month
+        ).select_related('category') \
+            .values('category__name') \
+            .annotate(total_amount=Sum('amount')) \
+            .order_by('category__name')
 
         # Extracts labels (category names) and data (total amounts) for the chart.
         chart_labels = [item['category__name'] for item in expenses_by_category]
